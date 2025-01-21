@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     double elapsed_msec = (end.tv_sec - begin.tv_sec)*1e3  
                             + (end.tv_nsec - begin.tv_nsec)*1e-6;
     
-    printf("Vector size: %d\nElapsed time on CPU: %.6f ms.\n", N, elapsed_msec);
+    printf("Elapsed time on CPU: %.6f ms.\n", elapsed_msec);
     /*for (int i =0; i<N; i++) {
         printf("%d %d %d\n", A[i], B[i], result[i]);
     }*/
