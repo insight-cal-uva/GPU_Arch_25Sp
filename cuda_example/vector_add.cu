@@ -1,24 +1,24 @@
 #include<stdio.h>
 #include<time.h>
 //vector length
-#define N 10000 
+//#define N 10000 
 
 //vector addition on CPU
-void serial_vector_add(int *A, int *B, int* result) {
+void serial_vector_add(int *A, int *B, int N, int* result) {
     for (int i=0; i<N; i++) {
         result[i] = A[i] + B[i];
     }
 }
 
 // vector addition on GPU
-__global__ void parallel_vector_add(int *A, int *B, int *result) {
+__global__ void parallel_vector_add(int *A, int *B, int N, int *result) {
     int id = blockDim.x * blockIdx.x + threadIdx.x ;
     if(id < N)  {
         result[id] = A[id] + B[id];
     }
 }
 
-void compare_results(int * result, int* out) {
+void compare_results(int * result, int* out, int N) {
     for(int i=0; i<N; i++) {
         if(result[i] != out[i]) {
             fprintf(stderr, "incorrect logic on GPU!\n");
@@ -27,7 +27,15 @@ void compare_results(int * result, int* out) {
     }
     printf("Correctnes check done!\n");
 }
-int main() {
+int main(int argc, char* argv[]) {
+    //vector length
+    int N = 10000;  //default
+
+    //take input from user
+    if(argc == 2 ) {
+		N = atoi(argv[1]);
+		printf("Vector length : %d\n", N);
+	}
     //size of array in bytes
     size_t bytes = sizeof(int) * N ;
     //Allocate memory on host
@@ -45,7 +53,7 @@ int main() {
     struct timespec begin, end; 
     //calculate vector addition on CPU
     clock_gettime(CLOCK_REALTIME, &begin);
-    serial_vector_add(A, B, result);
+    serial_vector_add(A, B, N, result);
     clock_gettime(CLOCK_REALTIME, &end);
     double elapsed_msec = (end.tv_sec - begin.tv_sec)*1e3  
                             + (end.tv_nsec - begin.tv_nsec)*1e-6;
@@ -77,7 +85,7 @@ int main() {
     cudaMemcpy(A_d, A, bytes, cudaMemcpyHostToDevice);
     cudaMemcpy(B_d, B, bytes, cudaMemcpyHostToDevice);
     //launch cuda kernel vector addition
-    parallel_vector_add<<<grid_dim, blk_dim>>>(A_d, B_d, out_d);
+    parallel_vector_add<<<grid_dim, blk_dim>>>(A_d, B_d, N, out_d);
     //wait for all threads to finish execution on device
     //cudaDeviceSynchronize();
     //copy results back to host
@@ -89,10 +97,10 @@ int main() {
     float elapsed_gpu_ms;
     //calculate time elapsed between the two events
     cudaEventElapsedTime(&elapsed_gpu_ms, begin_d, end_d);
-    printf("Time taken by shared memory KERNEL to execute is: %.6f ms\n", elapsed_gpu_ms);
+    printf("Elapsed time on GPU: %.6f ms\n", elapsed_gpu_ms);
 
     //check correctness of the result
-    compare_results(result, out);
+    compare_results(result, out, N);
     
     //free the memory allocated on GPU
     cudaFree(A_d);
