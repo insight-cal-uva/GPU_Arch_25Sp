@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
     //take input from user
     if(argc == 2 ) {
 		N = atoi(argv[1]);
-		printf("Vector length : %d\n", N);
 	}
+    printf("Vector length : %d\n", N);
     //size of array in bytes
     size_t bytes = sizeof(int) * N ;
     //Allocate memory on host
