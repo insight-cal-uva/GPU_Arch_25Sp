@@ -49,14 +49,11 @@ __global__ void kernel_gpu_mm(int * A , int * B ,  unsigned long * C , int width
 	int row = blockIdx . y * blockDim . y + threadIdx . y ;
         int col = blockIdx . x * blockDim . x + threadIdx . x ;
 	if ( row < width && col < width ) {
-                //printf("%d: %d\t%d\n", row * width + col, A [ row * width + col ], B [ row * width + col ]);
                 unsigned long temp = 0;
                 for(int i=0; i<width; i++) {
-                        //if(row == 0 && col == 0) printf("%d\t%d\n", )
                 	temp += A [ row * width + i ] *B [ i * width + col ];
                 }
 		C [ row * width + col ] = temp;
-        //printf("%d: %d\t%d\t%d\n", row * width + col, A [ row * width + col ], B [ row * width + col ], C[row * width + col ]);
         }
 }
 
@@ -183,7 +180,7 @@ int main(int argc, char *argv[]) {
 	//int A [ width * width ] , B [ width * width ] ; //, C [ width * width ];
 	int *A = (int*) malloc ( (width*width) * sizeof (int) );
         int *B = (int*) malloc ( (width*width) * sizeof (int) );
-        printf("Malloc done\n");
+       
 	//initializing matrices, A and B
 	for(int j=0; j<width*width; j++) {
         	A[j] = rand()%1000;
