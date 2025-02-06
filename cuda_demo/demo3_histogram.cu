@@ -31,12 +31,12 @@ __global__ void parallel_histogram(int *A, int N, int *result) {
         //initialize shared memory with zero 
         tileSh[tid] = 0;
     }
-    
+    __syncthreads();
     if(id < N)  {
         //update partial histogram in shared memory
         atomicAdd(&tileSh[A[id]], 1);
     }
-    
+    __syncthreads();
     if(tid<256) {
         //update global memory with partial results in shared memory
         atomicAdd(&result[tid], tileSh[tid]);
