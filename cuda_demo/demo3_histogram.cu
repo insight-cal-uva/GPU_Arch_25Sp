@@ -13,7 +13,6 @@ void serial_histogram(int *A, int N, int* result) {
 // Histogram on GPU
 __global__ void naive_parallel_histogram(int *A, int N, int *result) {
     int id = blockDim.x * blockIdx.x + threadIdx.x ;
-    int tid = threadIdx.x;
     
     if(id < N)  {
         //update partial histogram in global memory
@@ -22,7 +21,7 @@ __global__ void naive_parallel_histogram(int *A, int N, int *result) {
     
 }
 
-// Histogram on GPU
+// Histogram on GPU using shared memory
 __global__ void parallel_histogram(int *A, int N, int *result) {
     int id = blockDim.x * blockIdx.x + threadIdx.x ;
     int tid = threadIdx.x;
@@ -32,12 +31,12 @@ __global__ void parallel_histogram(int *A, int N, int *result) {
         //initialize shared memory with zero 
         tileSh[tid] = 0;
     }
-    __syncthreads();
+    
     if(id < N)  {
         //update partial histogram in shared memory
         atomicAdd(&tileSh[A[id]], 1);
     }
-    __syncthreads();
+    
     if(tid<256) {
         //update global memory with partial results in shared memory
         atomicAdd(&result[tid], tileSh[tid]);
@@ -126,6 +125,7 @@ int main(int argc, char* argv[]) {
     cudaEventElapsedTime(&elapsed_gpu_ms, begin_d, end_d);
     printf("Elapsed time on GPU with naive implementation: %.6f ms\n", elapsed_gpu_ms);
 
+    //Histogram using shared memory
     //check correctness of the result
     compare_results(result, out);
 
